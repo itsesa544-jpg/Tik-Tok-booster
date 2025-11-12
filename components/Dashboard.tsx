@@ -6,7 +6,7 @@ import { ref, set, push, runTransaction, onValue } from 'firebase/database';
 
 // SMM Provider API configuration
 const SMM_API_URL = 'https://www.smmservices24.com/api/v2';
-const SMM_API_KEY = 'd989ae35dd4993a5ea53764dc8081470a31aaac1';
+const SMM_API_KEY = '';
 
 const NewOrderForm: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
