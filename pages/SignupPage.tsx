@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserIcon, EmailIcon, LockIcon } from '../components/IconComponents';
+import { UserIcon, EmailIcon, LockIcon, GiftIcon } from '../components/IconComponents';
 import { auth, database } from '../firebase';
 import { createUserWithEmailAndPassword, updateProfile, signOut } from 'firebase/auth';
 import { ref, set, runTransaction } from 'firebase/database';
@@ -179,6 +179,17 @@ const SignupPage: React.FC<SignupPageProps> = ({ onSwitchToLogin }) => {
              রেফার করে ইনকাম করুন, সার্ভিস অর্ডার দিন, আর আপনার টিকটক প্রোফাইলকে দিন নতুন উচ্চতা!
           </p>
         </div>
+        
+        <div className="bg-green-50 border-l-4 border-green-500 text-green-800 p-4 rounded-r-lg" role="alert">
+            <div className="flex items-center">
+                <GiftIcon className="w-8 h-8 mr-4 text-green-600"/>
+                <div>
+                    <p className="font-bold">স্পেশাল অফার: ৳২ ওয়েলকাম বোনাস!</p>
+                    <p className="text-sm">এখনই রেজিস্টার করে আপনার অ্যাকাউন্টে বিনামূল্যে ৳২ বোনাস পান।</p>
+                </div>
+            </div>
+        </div>
+
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="relative">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -260,9 +271,8 @@ const SignupPage: React.FC<SignupPageProps> = ({ onSwitchToLogin }) => {
             />
           </div>
           
-          <div className="text-xs text-center text-gray-500 space-y-1 pt-2">
-            <p>✅ অ্যাকাউন্ট তৈরি করলেই আপনি পাবেন ৳২ ওয়েলকাম বোনাস!</p>
-            <p className="pt-1">⚠️ আপনার ব্রাউজার যদি পাসওয়ার্ডটিকে 'ঝুঁকিপূর্ণ' বা 'compromised' বলে, তাহলে অবশ্যই একটি নতুন ও শক্তিশালী পাসওয়ার্ড ব্যবহার করুন।</p>
+          <div className="text-xs text-center text-gray-500 pt-2">
+            <p>⚠️ আপনার ব্রাউজার যদি পাসওয়ার্ডটিকে 'ঝুঁকিপূর্ণ' বা 'compromised' বলে, তাহলে অবশ্যই একটি নতুন ও শক্তিশালী পাসওয়ার্ড ব্যবহার করুন।</p>
           </div>
 
           {error && <p className="text-red-500 text-sm text-center -mt-2">{error}</p>}
