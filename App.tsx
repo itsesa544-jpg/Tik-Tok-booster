@@ -12,6 +12,7 @@ import UserStats from './components/UserStats';
 import ShareSystem from './components/ShareSystem';
 import ProfilePage from './components/ProfilePage'; // Added for My Account page
 import { WhatsAppIcon, CopyIcon, CheckIcon } from './components/IconComponents';
+import { SiteSettings } from './types';
 
 // --- Footer Component ---
 const Footer: React.FC = () => {
@@ -25,14 +26,12 @@ const Footer: React.FC = () => {
 };
 
 // --- WhatsApp Contact Component ---
-const WHATSAPP_NUMBER = '01792157184';
-const WHATSAPP_LINK = `https://wa.me/8801792157184`;
-
-const WhatsAppContact: React.FC = () => {
+const WhatsAppContact: React.FC<{ whatsappNumber: string }> = ({ whatsappNumber }) => {
   const [copied, setCopied] = useState(false);
+  const whatsappLink = `https://wa.me/88${whatsappNumber.substring(1)}`;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(WHATSAPP_NUMBER);
+    navigator.clipboard.writeText(whatsappNumber);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
   };
@@ -44,11 +43,11 @@ const WhatsAppContact: React.FC = () => {
           <WhatsAppIcon className="h-10 w-10 mr-4 text-green-600" />
           <div>
             <h3 className="font-bold text-gray-800">Need Help? Contact us on WhatsApp</h3>
-            <p className="text-gray-600 text-lg font-mono tracking-wider">{WHATSAPP_NUMBER}</p>
+            <p className="text-gray-600 text-lg font-mono tracking-wider">{whatsappNumber}</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
-            <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-transform transform hover:scale-105">
+            <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-transform transform hover:scale-105">
                 Chat Now
             </a>
             <button onClick={handleCopy} className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 flex items-center">
@@ -79,6 +78,11 @@ const App: React.FC<AppProps> = ({ onLogout }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [activePage, setActivePage] = useState('New Order');
   const [balance, setBalance] = useState(0);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>({
+      whatsappNumber: '01792157184', // Default
+      telegramUsername: '@YourSupportContact' // Default
+  });
+
 
   const user = auth.currentUser;
   const isSuperAdmin = user?.email === 'mdesaalli74@gmail.com';
@@ -86,13 +90,25 @@ const App: React.FC<AppProps> = ({ onLogout }) => {
   useEffect(() => {
     if (!user) return;
 
+    // Fetch user balance
     const userRef = ref(database, `users/${user.uid}`);
-    const unsubscribe = onValue(userRef, (snapshot) => {
+    const unsubscribeUser = onValue(userRef, (snapshot) => {
       const data = snapshot.val();
       setBalance(data?.balance || 0);
     });
 
-    return () => unsubscribe();
+    // Fetch site settings
+    const settingsRef = ref(database, 'settings/siteInfo');
+    const unsubscribeSettings = onValue(settingsRef, (snapshot) => {
+        if (snapshot.exists()) {
+            setSiteSettings(snapshot.val());
+        }
+    });
+
+    return () => {
+        unsubscribeUser();
+        unsubscribeSettings();
+    };
   }, [user]);
 
   // If user is the super admin, they only see the admin dashboard.
@@ -109,14 +125,14 @@ const App: React.FC<AppProps> = ({ onLogout }) => {
       case 'New Order':
         return (
           <div className="space-y-6">
-            <WhatsAppContact />
+            <WhatsAppContact whatsappNumber={siteSettings.whatsappNumber}/>
             <UserStats />
             <NewOrder />
             <ShareSystem />
           </div>
         );
       case 'Add Funds':
-        return <AddFunds />;
+        return <AddFunds telegramUsername={siteSettings.telegramUsername} />;
       case 'Payment History':
         return <PaymentHistory />;
       case 'All Orders':
@@ -131,7 +147,7 @@ const App: React.FC<AppProps> = ({ onLogout }) => {
       default:
         return (
           <div className="space-y-6">
-            <WhatsAppContact />
+            <WhatsAppContact whatsappNumber={siteSettings.whatsappNumber}/>
             <UserStats />
             <NewOrder />
             <ShareSystem />

@@ -57,15 +57,12 @@ const PaymentCard: React.FC<PaymentCardProps> = ({ method }) => {
   );
 };
 
-const TELEGRAM_USERNAME = '@YourSupportContact';
-const TELEGRAM_LINK = `https://t.me/YourSupportContact`;
-
-const TelegramContact: React.FC = () => {
-    // This component remains the same
+const TelegramContact: React.FC<{ telegramUsername: string }> = ({ telegramUsername }) => {
     const [copied, setCopied] = useState(false);
+    const telegramLink = `https://t.me/${telegramUsername.replace('@', '')}`;
 
     const handleCopy = () => {
-        navigator.clipboard.writeText(TELEGRAM_USERNAME);
+        navigator.clipboard.writeText(telegramUsername);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -77,11 +74,11 @@ const TelegramContact: React.FC = () => {
                     <TelegramIcon className="h-10 w-10 mr-4 text-blue-600" />
                     <div>
                         <h3 className="font-bold text-gray-800">Need Payment Support? Contact us on Telegram</h3>
-                        <p className="text-gray-600 text-lg font-mono tracking-wider">{TELEGRAM_USERNAME}</p>
+                        <p className="text-gray-600 text-lg font-mono tracking-wider">{telegramUsername}</p>
                     </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <a href={TELEGRAM_LINK} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105">
+                    <a href={telegramLink} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105">
                         Chat Now
                     </a>
                     <button onClick={handleCopy} className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 flex items-center">
@@ -93,7 +90,11 @@ const TelegramContact: React.FC = () => {
     );
 };
 
-const AddFunds: React.FC = () => {
+interface AddFundsProps {
+    telegramUsername: string;
+}
+
+const AddFunds: React.FC<AddFundsProps> = ({ telegramUsername }) => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'local' | 'crypto'>('local');
@@ -220,7 +221,7 @@ const AddFunds: React.FC = () => {
             </div>
         )}
         
-        <TelegramContact />
+        <TelegramContact telegramUsername={telegramUsername} />
       </div>
       
       <div className="bg-white p-6 rounded-lg shadow-md">

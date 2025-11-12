@@ -1,17 +1,20 @@
 // Fix: Define and export interfaces for Category and Service.
 export interface Category {
+  id: string; // Firebase key
   name: string;
 }
 
 export interface Service {
-  id: number;
+  id: string; // Firebase key
+  serviceId: number; // The ID from the SMM provider
   name: string;
-  details: string[];
+  details: string; // Changed from string[] to string for easier editing
   rate: number;
   min: number;
   max: number;
-  category: string;
-  refill?: boolean;
+  category: string; // This will be the category name
+  refill: boolean;
+  enabled: boolean; // To toggle service visibility
 }
 
 export type PaymentStatus = 'Pending' | 'Completed' | 'Cancelled';
@@ -37,7 +40,7 @@ export interface Order {
   displayId: string; // New 6-digit user-facing ID
   uid: string;
   userEmail: string;
-  serviceId: number;
+  serviceId: number; // This is the SMM provider's service ID
   serviceName: string;
   link: string;
   quantity: number;
@@ -78,4 +81,10 @@ export interface PaymentMethodDetails {
   qrCodeUrl?: string;
   category: 'local' | 'crypto';
   enabled: boolean;
+}
+
+// New interface for Site Settings
+export interface SiteSettings {
+    whatsappNumber: string;
+    telegramUsername: string;
 }

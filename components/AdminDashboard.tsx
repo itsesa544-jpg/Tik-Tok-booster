@@ -4,7 +4,9 @@ import AdminFundRequests from './AdminFundRequests';
 import AllUsers from './AllUsers';
 import AdminAllOrders from './AdminAllOrders';
 import AdminPanel from './AdminPanel';
-import AdminPaymentSettings from './AdminPaymentSettings'; // New import
+import AdminPaymentSettings from './AdminPaymentSettings';
+import AdminServiceSettings from './AdminServiceSettings';
+import AdminSiteSettings from './AdminSiteSettings';
 import { 
   HistoryIcon,
   UsersGroupIcon, 
@@ -16,7 +18,7 @@ import {
   ChevronRightIcon,
   MenuIcon, 
   CloseIcon,
-  SettingsIcon, // New import
+  SettingsIcon,
 } from './IconComponents';
 
 // --- Footer Component ---
@@ -30,7 +32,7 @@ const Footer: React.FC = () => {
   );
 };
 
-type AdminPage = 'Overview' | 'All Orders' | 'Fund Requests' | 'All Users' | 'Login History' | 'Payment Settings';
+type AdminPage = 'Overview' | 'All Orders' | 'Fund Requests' | 'All Users' | 'Login History' | 'Payment Settings' | 'Service Settings' | 'Site Settings';
 
 // --- Reusable NavLink Components ---
 const NavLink: React.FC<{icon: React.ReactNode, text: string, active: boolean, onClick: () => void}> = ({ icon, text, active, onClick }) => (
@@ -79,9 +81,8 @@ interface AdminSidebarProps {
 }
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ activePage, setActivePage, onLogout, onSwitchToUser, isOpen, setIsOpen, forceAdminView }) => {
-  const [isOrdersOpen, setOrdersOpen] = useState(false);
-  const [isPaymentsOpen, setPaymentsOpen] = useState(false);
   const [isUsersOpen, setUsersOpen] = useState(false);
+  const [isSettingsOpen, setSettingsOpen] = useState(false);
 
   const handleNavigation = (page: AdminPage) => {
     setActivePage(page);
@@ -116,38 +117,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activePage, setActivePage, 
             )}
             
             <NavLink icon={<ListIcon className="w-6 h-6"/>} text="Overview" active={activePage === 'Overview'} onClick={() => handleNavigation('Overview')} />
+            <NavLink icon={<ShoppingCartIcon className="w-6 h-6"/>} text="All Orders" active={activePage === 'All Orders'} onClick={() => handleNavigation('All Orders')} />
+            <NavLink icon={<DollarIcon className="w-6 h-6"/>} text="Fund Requests" active={activePage === 'Fund Requests'} onClick={() => handleNavigation('Fund Requests')} />
             
-            <div className="my-1">
-              <button onClick={() => setOrdersOpen(!isOrdersOpen)} className="w-full flex items-center justify-between p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors duration-200 focus:outline-none">
-                  <div className="flex items-center">
-                      <ShoppingCartIcon className="w-6 h-6"/>
-                      <span className="mx-4 font-medium">Orders</span>
-                  </div>
-                  <ChevronRightIcon className={`w-5 h-5 transition-transform duration-200 ${isOrdersOpen ? 'rotate-90' : ''}`} />
-              </button>
-              {isOrdersOpen && (
-                  <div className="pl-6 mt-1 space-y-1">
-                      <SubNavLink icon={<ShoppingCartIcon className="w-5 h-5"/>} text="All Orders" active={activePage === 'All Orders'} onClick={() => handleNavigation('All Orders')} />
-                  </div>
-              )}
-            </div>
-            
-            <div className="my-1">
-               <button onClick={() => setPaymentsOpen(!isPaymentsOpen)} className="w-full flex items-center justify-between p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors duration-200 focus:outline-none">
-                  <div className="flex items-center">
-                      <DollarIcon className="w-6 h-6"/>
-                      <span className="mx-4 font-medium">Payments</span>
-                  </div>
-                  <ChevronRightIcon className={`w-5 h-5 transition-transform duration-200 ${isPaymentsOpen ? 'rotate-90' : ''}`} />
-              </button>
-              {isPaymentsOpen && (
-                  <div className="pl-6 mt-1 space-y-1">
-                      <SubNavLink icon={<DollarIcon className="w-5 h-5"/>} text="Fund Requests" active={activePage === 'Fund Requests'} onClick={() => handleNavigation('Fund Requests')} />
-                      <SubNavLink icon={<SettingsIcon className="w-5 h-5"/>} text="Payment Settings" active={activePage === 'Payment Settings'} onClick={() => handleNavigation('Payment Settings')} />
-                  </div>
-              )}
-            </div>
-
             <div className="my-1">
               <button onClick={() => setUsersOpen(!isUsersOpen)} className="w-full flex items-center justify-between p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors duration-200 focus:outline-none">
                   <div className="flex items-center">
@@ -160,6 +132,23 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activePage, setActivePage, 
                   <div className="pl-6 mt-1 space-y-1">
                       <SubNavLink icon={<UsersGroupIcon className="w-5 h-5"/>} text="All Users" active={activePage === 'All Users'} onClick={() => handleNavigation('All Users')} />
                       <SubNavLink icon={<HistoryIcon className="w-5 h-5"/>} text="Login History" active={activePage === 'Login History'} onClick={() => handleNavigation('Login History')} />
+                  </div>
+              )}
+            </div>
+
+            <div className="my-1">
+               <button onClick={() => setSettingsOpen(!isSettingsOpen)} className="w-full flex items-center justify-between p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors duration-200 focus:outline-none">
+                  <div className="flex items-center">
+                      <SettingsIcon className="w-6 h-6"/>
+                      <span className="mx-4 font-medium">Settings</span>
+                  </div>
+                  <ChevronRightIcon className={`w-5 h-5 transition-transform duration-200 ${isSettingsOpen ? 'rotate-90' : ''}`} />
+              </button>
+              {isSettingsOpen && (
+                  <div className="pl-6 mt-1 space-y-1">
+                      <SubNavLink icon={<ListIcon className="w-5 h-5"/>} text="Service Settings" active={activePage === 'Service Settings'} onClick={() => handleNavigation('Service Settings')} />
+                      <SubNavLink icon={<DollarIcon className="w-5 h-5"/>} text="Payment Settings" active={activePage === 'Payment Settings'} onClick={() => handleNavigation('Payment Settings')} />
+                      <SubNavLink icon={<SettingsIcon className="w-5 h-5"/>} text="Site Settings" active={activePage === 'Site Settings'} onClick={() => handleNavigation('Site Settings')} />
                   </div>
               )}
             </div>
@@ -196,6 +185,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout, onSwitchToUser, for
       case 'All Users': return <AllUsers />;
       case 'Login History': return <AdminPanel />;
       case 'Payment Settings': return <AdminPaymentSettings />;
+      case 'Service Settings': return <AdminServiceSettings />;
+      case 'Site Settings': return <AdminSiteSettings />;
       default: return <AdminOverview />;
     }
   };

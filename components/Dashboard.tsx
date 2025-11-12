@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { CATEGORIES, SERVICES } from '../constants';
-import { Service, Order } from '../types';
+import { Service, Category, Order } from '../types';
 import { ChevronDownIcon } from './IconComponents';
 import { auth, database } from '../firebase';
-import { ref, set, push, runTransaction } from 'firebase/database';
+import { ref, set, push, runTransaction, onValue } from 'firebase/database';
 
 // SMM Provider API configuration
 const SMM_API_URL = 'https://www.smmservices24.com/api/v2';
 const SMM_API_KEY = 'd989ae35dd4993a5ea53764dc8081470a31aaac1';
 
 const NewOrderForm: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]?.name || '');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
+
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [servicesForCategory, setServicesForCategory] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [link, setLink] = useState('');
@@ -21,12 +24,47 @@ const NewOrderForm: React.FC = () => {
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    const filteredServices = SERVICES.filter(s => s.category === selectedCategory);
+    const categoriesRef = ref(database, 'categories');
+    const servicesRef = ref(database, 'services');
+
+    const unsubscribeCategories = onValue(categoriesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const catList: Category[] = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        setCategories(catList);
+        if (catList.length > 0) {
+            setSelectedCategory(catList[0].name);
+        }
+      } else {
+        setCategories([]);
+      }
+    });
+
+    const unsubscribeServices = onValue(servicesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const serviceList: Service[] = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        setServices(serviceList.filter(s => s.enabled)); // Only use enabled services
+      } else {
+        setServices([]);
+      }
+      setLoadingData(false);
+    });
+
+    return () => {
+      unsubscribeCategories();
+      unsubscribeServices();
+    };
+  }, []);
+  
+
+  useEffect(() => {
+    const filteredServices = services.filter(s => s.category === selectedCategory);
     setServicesForCategory(filteredServices);
     setSelectedService(null);
     setQuantity(0);
     setCharge(0);
-  }, [selectedCategory]);
+  }, [selectedCategory, services]);
 
   useEffect(() => {
     if (selectedService) {
@@ -42,7 +80,7 @@ const NewOrderForm: React.FC = () => {
   };
 
   const handleServiceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const service = servicesForCategory.find(s => s.id === parseInt(e.target.value)) || null;
+    const service = servicesForCategory.find(s => s.id === e.target.value) || null;
     setSelectedService(service);
   };
   
@@ -103,14 +141,17 @@ const NewOrderForm: React.FC = () => {
       const apiParams = new URLSearchParams({
         key: SMM_API_KEY,
         action: 'add',
-        service: selectedService.id.toString(),
-        url: link,
+        service: selectedService.serviceId.toString(),
+        link,
         quantity: quantity.toString(),
       });
-
+      
       const response = await fetch(SMM_API_URL, {
-        method: 'POST',
-        body: apiParams,
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: apiParams.toString(),
       });
 
       const apiResult = await response.json();
@@ -131,7 +172,7 @@ const NewOrderForm: React.FC = () => {
         displayId,
         uid: user.uid,
         userEmail: user.email || 'N/A',
-        serviceId: selectedService.id,
+        serviceId: selectedService.serviceId,
         serviceName: selectedService.name,
         link,
         quantity,
@@ -142,9 +183,11 @@ const NewOrderForm: React.FC = () => {
       };
       await set(newOrderRef, newOrder);
 
-      setSuccess(`Order placed successfully! Order ID: ${displayId}.`);
+      setSuccess(`অর্ডার সফল হয়েছে! আপনার অর্ডার আইডি: ${displayId}`);
       // Reset form
-      setSelectedCategory(CATEGORIES[0]?.name || '');
+      if (categories.length > 0) {
+        setSelectedCategory(categories[0].name);
+      }
       setLink('');
 
     } catch (err: any) {
@@ -176,6 +219,14 @@ const NewOrderForm: React.FC = () => {
     }
   }
 
+  if (loadingData) {
+      return (
+          <div className="bg-white p-6 rounded-lg shadow-md text-center">
+              <p className="animate-pulse">Loading services...</p>
+          </div>
+      );
+  }
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">New Order</h2>
@@ -186,7 +237,7 @@ const NewOrderForm: React.FC = () => {
           <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">Category</label>
           <div className="relative">
             <select id="category" value={selectedCategory} onChange={handleCategoryChange} className="w-full appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-3">
-              {CATEGORIES.map(cat => <option key={cat.name} value={cat.name}>{cat.name}</option>)}
+              {categories.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
             </select>
             <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
           </div>
@@ -210,7 +261,7 @@ const NewOrderForm: React.FC = () => {
         {selectedService && (
              <div className="p-4 bg-gray-50 rounded-lg border text-sm text-gray-600">
                 <h4 className="font-semibold text-gray-800 mb-2">Service Details</h4>
-                <p>{selectedService.details.join(' | ')}</p>
+                <p>{selectedService.details}</p>
                 <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                     <p><span className="font-medium">Min:</span> {selectedService.min}</p>
                     <p><span className="font-medium">Max:</span> {selectedService.max}</p>
@@ -240,7 +291,7 @@ const NewOrderForm: React.FC = () => {
         </div>
 
         <div>
-          <button type="submit" disabled={submitting} className="w-full px-5 py-3 text-base font-medium text-center text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 transition-transform transform hover:scale-105 disabled:bg-green-400 disabled:cursor-not-allowed">
+          <button type="submit" disabled={submitting || !selectedService} className="w-full px-5 py-3 text-base font-medium text-center text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 transition-transform transform hover:scale-105 disabled:bg-green-400 disabled:cursor-not-allowed">
             {submitting ? 'Submitting...' : 'Submit Order'}
           </button>
         </div>
