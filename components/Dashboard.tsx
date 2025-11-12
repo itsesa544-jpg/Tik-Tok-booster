@@ -149,7 +149,16 @@ const NewOrderForm: React.FC = () => {
 
     } catch (err: any) {
       console.error("Order submission failed: ", err);
-      let errorMessage = err.message || 'Failed to place order. Please try again.';
+      let userErrorMessage = 'একটি অপ্রত্যাশিত সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।'; // An unknown error occurred. Please try again.
+    
+      if (err.message) {
+          if (err.message.includes('Provider error:')) {
+              const providerError = err.message.replace('Provider error:', '').trim();
+              userErrorMessage = `সার্ভিস প্রোভাইডারের কাছ থেকে একটি ত্রুটি এসেছে: "${providerError}"। অনুগ্রহ করে আপনার লিঙ্কটি পরীক্ষা করুন অথবা অন্য একটি সার্ভিস চেষ্টা করুন।`;
+          } else if (err.message.toLowerCase().includes('failed to fetch')) {
+              userErrorMessage = 'সার্ভিস প্রোভাইডারের সাথে সংযোগ স্থাপন করা সম্ভব হচ্ছে না। আপনার ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।';
+          }
+      }
 
       // If charge was deducted but something failed afterwards, refund the user
       if (chargeDeducted) {
@@ -159,9 +168,9 @@ const NewOrderForm: React.FC = () => {
           }
           return userData;
         });
-        errorMessage += ' Your account has been refunded.';
+        userErrorMessage += ' আপনার অ্যাকাউন্টে টাকা ফেরত দেওয়া হয়েছে।';
       }
-      setError(errorMessage);
+      setError(userErrorMessage);
     } finally {
       setSubmitting(false);
     }
