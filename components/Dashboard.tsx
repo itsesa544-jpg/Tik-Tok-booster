@@ -75,7 +75,7 @@ const NewOrderForm: React.FC = () => {
     }
   }, [selectedService]);
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedCategory(e.target.value);
   };
 
@@ -234,12 +234,31 @@ const NewOrderForm: React.FC = () => {
       {success && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">{success}</div>}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-          <div className="relative">
-            <select id="category" value={selectedCategory} onChange={handleCategoryChange} className="w-full appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-3">
-              {categories.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
-            </select>
-            <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+          <div className="rounded-lg border border-gray-200 divide-y divide-gray-200">
+            {categories.map(cat => (
+              <label 
+                key={cat.id} 
+                htmlFor={`cat-${cat.id}`} 
+                className={`flex items-center justify-between p-4 cursor-pointer transition-colors ${selectedCategory === cat.name ? 'bg-green-50' : 'bg-white hover:bg-gray-50'}`}
+              >
+                <span className={`font-medium ${selectedCategory === cat.name ? 'text-green-700' : 'text-gray-800'}`}>{cat.name}</span>
+                <div className="relative flex items-center justify-center">
+                  <input 
+                    type="radio" 
+                    id={`cat-${cat.id}`}
+                    name="category" 
+                    value={cat.name} 
+                    checked={selectedCategory === cat.name}
+                    onChange={handleCategoryChange}
+                    className="sr-only peer"
+                  />
+                  <div className="w-5 h-5 rounded-full border-2 border-gray-300 peer-checked:border-green-600 flex items-center justify-center transition-all">
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-600 scale-0 peer-checked:scale-100 transition-transform"></div>
+                  </div>
+                </div>
+              </label>
+            ))}
           </div>
         </div>
 
