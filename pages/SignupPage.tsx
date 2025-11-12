@@ -54,13 +54,12 @@ const SignupPage: React.FC<SignupPageProps> = ({ onSwitchToLogin }) => {
         uid: user.uid,
         createdAt: new Date().toISOString(),
         role: 'user', // Assign default role
-        balance: 0, // Initialize balance, will be updated if referred
+        balance: 2, // Welcome bonus for all new users
       };
 
       // Add referrer ID and award bonuses if it exists
       if (referrerId) {
         userData.referredBy = referrerId;
-        userData.balance = 2; // Bonus for the new user
 
         // Award bonus to the referrer
         const referrerRef = ref(database, `users/${referrerId}`);
