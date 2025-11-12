@@ -22,6 +22,7 @@ const NewOrderForm: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
   useEffect(() => {
     const categoriesRef = ref(database, 'categories');
@@ -33,7 +34,7 @@ const NewOrderForm: React.FC = () => {
         const catList: Category[] = Object.keys(data).map(key => ({ id: key, ...data[key] }));
         setCategories(catList);
         if (catList.length > 0) {
-            setSelectedCategory(catList[0].name);
+          setSelectedCategory(current => current || catList[0].name);
         }
       } else {
         setCategories([]);
@@ -77,6 +78,7 @@ const NewOrderForm: React.FC = () => {
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedCategory(e.target.value);
+    setIsCategoryModalOpen(false);
   };
 
   const handleServiceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -235,32 +237,59 @@ const NewOrderForm: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-          <div className="rounded-lg border border-gray-200 divide-y divide-gray-200">
-            {categories.map(cat => (
-              <label 
-                key={cat.id} 
-                htmlFor={`cat-${cat.id}`} 
-                className={`flex items-center justify-between p-4 cursor-pointer transition-colors ${selectedCategory === cat.name ? 'bg-green-50' : 'bg-white hover:bg-gray-50'}`}
-              >
-                <span className={`font-medium ${selectedCategory === cat.name ? 'text-green-700' : 'text-gray-800'}`}>{cat.name}</span>
-                <div className="relative flex items-center justify-center">
-                  <input 
-                    type="radio" 
-                    id={`cat-${cat.id}`}
-                    name="category" 
-                    value={cat.name} 
-                    checked={selectedCategory === cat.name}
-                    onChange={handleCategoryChange}
-                    className="sr-only peer"
-                  />
-                  <div className="w-5 h-5 rounded-full border-2 border-gray-300 peer-checked:border-green-600 flex items-center justify-center transition-all">
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-600 scale-0 peer-checked:scale-100 transition-transform"></div>
-                  </div>
-                </div>
-              </label>
-            ))}
-          </div>
+          <button
+            type="button"
+            onClick={() => setIsCategoryModalOpen(true)}
+            className="w-full flex items-center justify-between text-left bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 p-3"
+            aria-haspopup="listbox"
+            aria-expanded={isCategoryModalOpen}
+          >
+            <span>{selectedCategory || 'Select a category'}</span>
+            <ChevronDownIcon className="w-5 h-5 text-gray-400" />
+          </button>
         </div>
+        
+        {isCategoryModalOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4"
+            onClick={() => setIsCategoryModalOpen(false)}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div 
+              className="bg-white rounded-lg shadow-xl w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-2 max-h-[70vh] overflow-y-auto">
+                {categories.map(cat => (
+                  <label 
+                    key={cat.id} 
+                    htmlFor={`cat-modal-${cat.id}`} 
+                    className="flex items-center justify-between p-4 cursor-pointer transition-colors rounded-lg hover:bg-gray-50"
+                  >
+                    <span className={`font-medium ${selectedCategory === cat.name ? 'text-green-700' : 'text-gray-800'}`}>{cat.name}</span>
+                    <div className="relative flex items-center justify-center">
+                      <input 
+                        type="radio" 
+                        id={`cat-modal-${cat.id}`}
+                        name="category-modal" 
+                        value={cat.name} 
+                        checked={selectedCategory === cat.name}
+                        onChange={handleCategoryChange}
+                        className="sr-only peer"
+                      />
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${selectedCategory === cat.name ? 'border-green-600' : 'border-gray-400'}`}>
+                        {selectedCategory === cat.name && (
+                          <div className="w-3 h-3 rounded-full bg-green-600"></div>
+                        )}
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div>
           <label htmlFor="service" className="block text-sm font-medium text-gray-700 mb-2">Service</label>
