@@ -11,6 +11,7 @@ import { ref, onValue } from 'firebase/database';
 import UserStats from './components/UserStats';
 import ShareSystem from './components/ShareSystem';
 import ProfilePage from './components/ProfilePage'; // Added for My Account page
+import ServicesPage from './components/ServicesPage'; // Added for Services page
 import { WhatsAppIcon, CopyIcon, CheckIcon } from './components/IconComponents';
 import { SiteSettings } from './types';
 
@@ -131,6 +132,8 @@ const App: React.FC<AppProps> = ({ onLogout }) => {
             <ShareSystem />
           </div>
         );
+      case 'Services':
+        return <ServicesPage />;
       case 'Add Funds':
         return <AddFunds telegramUsername={siteSettings.telegramUsername} />;
       case 'Payment History':

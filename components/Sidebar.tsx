@@ -11,6 +11,7 @@ import {
   LogoutIcon,
   AdminIcon,
   UserIcon, // Added for profile page
+  ListIcon, // Added for Services page
 } from './IconComponents';
 
 interface SidebarProps {
@@ -86,6 +87,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, activePage, setAct
               text="New Order" 
               active={activePage === 'New Order'}
               onClick={() => handleNavigation('New Order')}
+            />
+
+            <NavLink 
+              icon={<ListIcon className="w-6 h-6"/>} 
+              text="Services"
+              active={activePage === 'Services'}
+              onClick={() => handleNavigation('Services')}
             />
             
             <div className="my-1">

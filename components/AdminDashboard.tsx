@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminOverview from './AdminOverview';
 import AdminFundRequests from './AdminFundRequests';
 import AllUsers from './AllUsers';
@@ -32,7 +32,7 @@ const Footer: React.FC = () => {
   );
 };
 
-type AdminPage = 'Overview' | 'All Orders' | 'Fund Requests' | 'Services' | 'All Users' | 'Login History' | 'Payment Settings' | 'Site Settings';
+type AdminPage = 'Overview' | 'All Orders' | 'Fund Requests' | 'Service Settings' | 'All Users' | 'Login History' | 'Payment Settings' | 'Site Settings';
 
 // --- Reusable NavLink Components ---
 const NavLink: React.FC<{icon: React.ReactNode, text: string, active: boolean, onClick: () => void}> = ({ icon, text, active, onClick }) => (
@@ -84,6 +84,15 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activePage, setActivePage, 
   const [isUsersOpen, setUsersOpen] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
 
+  const isUsersActive = activePage === 'All Users' || activePage === 'Login History';
+  const isSettingsActive = activePage === 'Payment Settings' || activePage === 'Site Settings' || activePage === 'Service Settings';
+
+  useEffect(() => {
+    if (isUsersActive) setUsersOpen(true);
+    if (isSettingsActive) setSettingsOpen(true);
+  }, [activePage, isUsersActive, isSettingsActive]);
+
+
   const handleNavigation = (page: AdminPage) => {
     setActivePage(page);
     if (window.innerWidth < 1024) {
@@ -119,10 +128,11 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activePage, setActivePage, 
             <NavLink icon={<ListIcon className="w-6 h-6"/>} text="Overview" active={activePage === 'Overview'} onClick={() => handleNavigation('Overview')} />
             <NavLink icon={<ShoppingCartIcon className="w-6 h-6"/>} text="All Orders" active={activePage === 'All Orders'} onClick={() => handleNavigation('All Orders')} />
             <NavLink icon={<DollarIcon className="w-6 h-6"/>} text="Fund Requests" active={activePage === 'Fund Requests'} onClick={() => handleNavigation('Fund Requests')} />
-            <NavLink icon={<ListIcon className="w-6 h-6"/>} text="Services" active={activePage === 'Services'} onClick={() => handleNavigation('Services')} />
             
             <div className="my-1">
-              <button onClick={() => setUsersOpen(!isUsersOpen)} className="w-full flex items-center justify-between p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors duration-200 focus:outline-none">
+              <button onClick={() => setUsersOpen(!isUsersOpen)} className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors duration-200 focus:outline-none text-left ${
+                  isUsersActive ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+              }`}>
                   <div className="flex items-center">
                       <UsersGroupIcon className="w-6 h-6"/>
                       <span className="mx-4 font-medium">Users</span>
@@ -138,7 +148,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activePage, setActivePage, 
             </div>
 
             <div className="my-1">
-               <button onClick={() => setSettingsOpen(!isSettingsOpen)} className="w-full flex items-center justify-between p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors duration-200 focus:outline-none">
+               <button onClick={() => setSettingsOpen(!isSettingsOpen)} className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors duration-200 focus:outline-none text-left ${
+                    isSettingsActive ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+               }`}>
                   <div className="flex items-center">
                       <SettingsIcon className="w-6 h-6"/>
                       <span className="mx-4 font-medium">Settings</span>
@@ -147,6 +159,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activePage, setActivePage, 
               </button>
               {isSettingsOpen && (
                   <div className="pl-6 mt-1 space-y-1">
+                      <SubNavLink icon={<ListIcon className="w-5 h-5"/>} text="Service Settings" active={activePage === 'Service Settings'} onClick={() => handleNavigation('Service Settings')} />
                       <SubNavLink icon={<DollarIcon className="w-5 h-5"/>} text="Payment Settings" active={activePage === 'Payment Settings'} onClick={() => handleNavigation('Payment Settings')} />
                       <SubNavLink icon={<SettingsIcon className="w-5 h-5"/>} text="Site Settings" active={activePage === 'Site Settings'} onClick={() => handleNavigation('Site Settings')} />
                   </div>
@@ -184,7 +197,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout, onSwitchToUser, for
       case 'Fund Requests': return <AdminFundRequests />;
       case 'All Users': return <AllUsers />;
       case 'Login History': return <AdminPanel />;
-      case 'Services': return <AdminServiceSettings />;
+      case 'Service Settings': return <AdminServiceSettings />;
       case 'Payment Settings': return <AdminPaymentSettings />;
       case 'Site Settings': return <AdminSiteSettings />;
       default: return <AdminOverview />;
